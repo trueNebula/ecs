@@ -5,17 +5,7 @@ import "core:reflect"
 
 ComponentStore :: distinct [MAX_ENTITIES]Component
 
-// TODO: Used by the demo, clear these
-Component :: union {
-	Position,
-	Velocity,
-	Size,
-	Sprite,
-	Color,
-	Lifespan,
-	Flash,
-	Lifetime,
-}
+Component :: union {}
 
 ComponentMask :: [4]u64
 
