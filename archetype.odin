@@ -3,9 +3,7 @@ package ecs
 import "base:runtime"
 import "core:fmt"
 import "core:mem"
-import "core:prof/spall"
 import "core:reflect"
-import u "game:util"
 
 Archetype :: struct {
 	mask:     ComponentMask,
@@ -13,10 +11,13 @@ Archetype :: struct {
 	columns:  map[typeid][dynamic]byte,
 }
 
+EntityRecord :: struct {
+	archetype: ^Archetype,
+	row:       int,
+}
+
 @(private)
 getOrCreateArchetype :: proc(world: ^World, mask: ^ComponentMask) -> ^Archetype {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "archetype.getOrCreateArchetype")
-
 	for arch in world.archetypes {
 		if arch.mask == mask^ {
 			info := type_info_of(Component)
@@ -105,8 +106,6 @@ moveData :: proc(world: ^World, srcArch: ^Archetype, dstArch: ^Archetype, row: i
 
 @(private)
 batchMoveData :: proc(world: ^World, cmd: ^BatchAddCommand) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "archetype.batchMoveData")
-
 	entityCount := len(cmd.entities)
 	if entityCount == 0 do return
 
@@ -219,8 +218,6 @@ batchMoveData :: proc(world: ^World, cmd: ^BatchAddCommand) {
 
 @(private)
 batchDeleteData :: proc(world: ^World, cmd: ^BatchDeleteCommand) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "archetype.batchDeleteData")
-
 	entityCount := len(cmd.entities)
 	if entityCount == 0 do return
 
@@ -406,11 +403,6 @@ getComponent :: proc(world: ^World, entityId: u32, $T: typeid) -> (component: ^T
 		return nil, true
 	}
 	return (^T)(data), false
-}
-
-EntityRecord :: struct {
-	archetype: ^Archetype,
-	row:       int,
 }
 
 @(private)

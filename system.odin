@@ -1,6 +1,5 @@
 package ecs
 
-
 System :: proc(world: ^World)
 
 RegisterSetupSystem :: proc(world: ^World, system: proc(world: ^World)) {

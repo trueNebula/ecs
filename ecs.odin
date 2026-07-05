@@ -5,9 +5,7 @@ package ecs
 import "base:runtime"
 import "core:fmt"
 import "core:mem"
-import "core:prof/spall"
 import "core:reflect"
-import u "game:util"
 
 Entity :: struct {
 	id: u32,
@@ -94,8 +92,6 @@ DeleteComponent :: proc(world: ^World, entityId: u32, tid: typeid) {
 }
 
 FrameEnd :: proc(world: ^World) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "ecs.FrameEnd")
-
 	batch := &world.batch
 	processAdditionsIntoCommands(world, batch)
 	processDeletionsIntoCommands(world, batch)
@@ -124,8 +120,6 @@ Initial :: proc(world: ^World) {
 
 @(private)
 addInternal :: proc(world: ^World, components: []Component) -> u32 {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "ecs.Add")
-
 	entityId := world.nextId
 	world.nextId += 1
 
@@ -149,8 +143,6 @@ addInternal :: proc(world: ^World, components: []Component) -> u32 {
 // TODO: this is broken for a mass-death event
 @(private)
 deleteInternal :: proc(world: ^World, entityId: u32) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "ecs.Delete")
-
 	record := getRecord(world, entityId)
 	removeFromColumns(world, record.archetype, record.row)
 	swapRecordRow(world, record.archetype, entityId)
@@ -159,8 +151,6 @@ deleteInternal :: proc(world: ^World, entityId: u32) {
 
 @(private)
 addComponentInternal :: proc(world: ^World, entityId: u32, component: Component) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "ecs.addComponentInternal")
-
 	record := getRecord(world, entityId)
 	arch := record.archetype
 	tid := reflect.union_variant_typeid(component)
@@ -187,8 +177,6 @@ addComponentInternal :: proc(world: ^World, entityId: u32, component: Component)
 
 @(private)
 deleteComponentInternal :: proc(world: ^World, entityId: u32, tid: typeid) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "ecs.deleteComponentInternal")
-
 	record := getRecord(world, entityId)
 	arch := record.archetype
 	srcTids := getComponentsFromMask(&arch.mask)

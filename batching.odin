@@ -1,10 +1,8 @@
 package ecs
 
 import "core:fmt"
-import "core:prof/spall"
 import "core:reflect"
 import "core:slice"
-import u "game:util"
 
 BatchManager :: struct {
 	additions:   map[u32][dynamic]Component,
@@ -101,8 +99,6 @@ deleteComponentFromEntity :: proc(batch: ^BatchManager, entityId: u32, tid: type
 
 @(private)
 processAdditionsIntoCommands :: proc(world: ^World, batch: ^BatchManager) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "batching.processAdditionsIntoCommands")
-
 	for entityId, &components in batch.additions {
 		src := world.entities[entityId].archetype
 		srcMask := src.mask
@@ -146,8 +142,6 @@ processAdditionsIntoCommands :: proc(world: ^World, batch: ^BatchManager) {
 
 @(private)
 processDeletionsIntoCommands :: proc(world: ^World, batch: ^BatchManager) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "batching.processAdditionsIntoCommands")
-
 	for entityId, &components in batch.deletions {
 		src := world.entities[entityId].archetype
 		srcMask := src.mask
@@ -237,8 +231,6 @@ sortDeletionCommands :: proc(world: ^World, batch: ^BatchManager) {
 
 @(private)
 executeAdditionCommands :: proc(world: ^World, batch: ^BatchManager) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "batching.executeAdditionCommands")
-
 	for &cmd in batch.addQueue {
 		batchMoveData(world, &cmd)
 	}
@@ -246,8 +238,6 @@ executeAdditionCommands :: proc(world: ^World, batch: ^BatchManager) {
 
 @(private)
 executeDeletionCommands :: proc(world: ^World, batch: ^BatchManager) {
-	spall.SCOPED_EVENT(&u.spall_ctx, &u.spall_buf, "batching.executeDeletionCommands")
-
 	for &cmd in batch.deleteQueue {
 		batchDeleteData(world, &cmd)
 	}

@@ -3,8 +3,6 @@ package ecs
 import "base:runtime"
 import "core:reflect"
 
-ComponentStore :: distinct [MAX_ENTITIES]Component
-
 Component :: union {}
 
 ComponentMask :: [4]u64
