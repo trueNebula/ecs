@@ -1,5 +1,7 @@
 package ecs
 
+// v1.0.0
+
 import "base:runtime"
 import "core:fmt"
 import "core:mem"
