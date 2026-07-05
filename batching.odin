@@ -38,10 +38,12 @@ Command :: struct {
 }
 
 @(private)
-addEntity :: proc(world: ^World, batch: ^BatchManager, components: []Component) -> u32 {
-	entityId := world.nextId
-	world.nextId += 1
-
+addEntity :: proc(
+	world: ^World,
+	batch: ^BatchManager,
+	entityId: u32,
+	components: []Component,
+) -> u32 {
 	emptyMask := [4]u64{}
 	arch := getOrCreateArchetype(world, &emptyMask)
 

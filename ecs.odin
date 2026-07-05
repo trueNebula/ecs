@@ -18,6 +18,7 @@ World :: struct {
 	entities:   map[u32]EntityRecord,
 	meta:       map[typeid]ComponentMeta,
 	nextId:     u32,
+	idQueue:    [dynamic]u32,
 	arena:      mem.Arena,
 	batch:      BatchManager,
 	setup:      [dynamic]System,
@@ -56,14 +57,16 @@ CreateWorld :: proc() -> World {
 USE_BATCHING :: true
 
 Add :: proc(world: ^World, components: ..Component) -> u32 {
+	entityId := getNextId(world)
 	if USE_BATCHING {
-		return addEntity(world, &world.batch, components)
+		return addEntity(world, &world.batch, entityId, components)
 	} else {
-		return addInternal(world, components)
+		return addInternal(world, entityId, components)
 	}
 }
 
 Delete :: proc(world: ^World, entityId: u32) {
+	append(&world.idQueue, entityId)
 	if USE_BATCHING {
 		deleteEntity(world, &world.batch, entityId)
 	} else {
@@ -119,10 +122,7 @@ Initial :: proc(world: ^World) {
 }
 
 @(private)
-addInternal :: proc(world: ^World, components: []Component) -> u32 {
-	entityId := world.nextId
-	world.nextId += 1
-
+addInternal :: proc(world: ^World, entityId: u32, components: []Component) -> u32 {
 	mask := computeMask(world, components)
 	arch := getOrCreateArchetype(world, &mask)
 
@@ -206,4 +206,18 @@ deleteComponentInternal :: proc(world: ^World, entityId: u32, tid: typeid) {
 	}
 	world.entities[entityId] = newRecord
 	append(&dstArch.entities, entityId)
+}
+
+@(private)
+getNextId :: proc(world: ^World) -> u32 {
+	if len(world.idQueue == 0) {
+		assert(world.nextId != MAX_ENTITIES, "Tried to create more entities than allowed!")
+		id := world.nextId
+		world.nextId += 1
+		return id
+	}
+
+	id := world.idQueue[0]
+	ordered_remove(&world.idQueue, 0)
+	return id
 }
